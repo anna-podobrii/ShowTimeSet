@@ -6,6 +6,6 @@ final class ShowTimeSetTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
         // results.
-        XCTAssertEqual(ShowTimeSet().text, "Hello, World!")
+        XCTAssertEqual(ShowTimeSet(monTimes: "", tueTimes: "", wedTimes: "", thuTimes: "", friTimes: "", satTimes: "", sunTimes: "", dateSpecificTimes: [""]).text, "Hello, World!")
     }
 }
