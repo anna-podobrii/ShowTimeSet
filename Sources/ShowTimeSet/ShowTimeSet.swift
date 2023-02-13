@@ -153,9 +153,77 @@ public struct ShowTimeSet {
     static func removingAMPMSpace(from timeString:String) -> String {
         return timeString.replacingOccurrences(of: " am", with: "am").replacingOccurrences(of: " pm", with: "pm").replacingOccurrences(of: ":00", with: "")
     }
+    
+    public func showHoursDisplay(for weekday: Weekday, weekdayIsToday today: Bool, rightNowDate: Date = Date()) -> String {
+        guard hasShowTimesForDay(for: weekday, comparisonDate: rightNowDate) else {
+            return "No Times"
+        }
+        
+        // Get base show time list
+        var comparisonShowTimes: ShowEventTimeList = showEventTimeList(for: weekday.rawValue)
+        // Check if there are date-specific show times
+        for (dateInterval, showTimeList) in dateSpecificShowTimes {
+            if let endOfComparisonDate = rightNowDate.endOfDay, dateInterval.contains(endOfComparisonDate) {
+                comparisonShowTimes = showTimeList
+                break
+            }
+        }
+
+        var hoursDisplayString:String = ""
+        for showTime in comparisonShowTimes.showTimes {
+            hoursDisplayString.append("\(showTime.listDisplay()) ")
+        }
+        
+        return ShowTimeSet.convertMidnightAndNoon(in: ShowTimeSet.removingAMPMSpace(from: hoursDisplayString))
+    }
+  
+    
+    func showEventTimeList(for weekday:Int) -> ShowEventTimeList {
+        switch weekday {
+        case 1:
+            return sundayShowTimes
+        case 2:
+            return mondayShowTimes
+        case 3:
+            return tuesdayShowTimes
+        case 4:
+            return wednesdayShowTimes
+        case 5:
+            return thursdayShowTimes
+        case 6:
+            return fridayShowTimes
+        case 7:
+            return saturdayShowTimes
+        default:
+            return ShowEventTimeList(showTimes: [])
+        }
+    }
+    
+    func hasShowTimesForDay(for weekday: Weekday, comparisonDate: Date = Date()) -> Bool {
+        // LOGIC:
+        // Step 1: Evaluate whether any date-specific showtimes match the comparison date. If so, return true if showtimes, otherwise false (dark).
+        // Step 2: Determine if there are showtimes for the specified weekday.
+        
+        // Step 1.
+        for (dateInterval, showTimeList) in dateSpecificShowTimes {
+            if let endOfComparisonDate = comparisonDate.endOfDay, dateInterval.contains(endOfComparisonDate) {
+                return showTimeList.hasShowTimes
+            }
+        }
+        
+        // Step 2.
+        let showTimeList = showEventTimeList(for: weekday.rawValue)
+        if showTimeList.hasShowTimes {
+            return true
+        }
+                
+        return false
+    }
+
 }
 
-struct ShowEventTime {
+
+public struct ShowEventTime {
     
     static var timeFormatter:DateFormatter {
         let formatter = DateFormatter()
@@ -186,7 +254,7 @@ struct ShowEventTime {
     }
 }
 
-struct ShowEventTimeList {
+public struct ShowEventTimeList {
     let showTimes: [ShowEventTime]
     
     var firstTime: ShowEventTime? {
@@ -220,27 +288,4 @@ struct ShowEventTimeList {
         return hoursDisplayStrings
     }
 
-}
-
-extension DateInterval {
-    func datesInInterval() -> [Date] {
-        let calendar = NSCalendar.current
-        // start with beginning date
-        var date = calendar.startOfDay(for: start)
-        
-        let numberOfDaysToEndOfInterval = calendar.dateComponents([.day], from: start, to: end)
-        
-        var dates: [Date] = [date]
-        
-        guard let numberOfDays = numberOfDaysToEndOfInterval.day else {
-            return dates
-        }
-        if numberOfDays > 0 {
-            for _ in 1 ... numberOfDays {
-                date = calendar.date(byAdding: Calendar.Component.day, value: 1, to: date)!
-                dates.append(date)
-            }
-        }
-        return dates
-    }
 }
