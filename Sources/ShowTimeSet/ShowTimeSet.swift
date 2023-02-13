@@ -144,7 +144,7 @@ public struct ShowTimeSet {
         return nil
     }
     
-    static func convertMidnightAndNoon(in timeString: String) -> String {
+    public func convertMidnightAndNoon(in timeString: String) -> String {
         let convertMidnight = timeString.replacingOccurrences(of: "12:00am", with: "Midnight")
         let convertNoon = convertMidnight.replacingOccurrences(of: "12:00pm", with: "Noon")
         return convertNoon
